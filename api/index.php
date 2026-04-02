@@ -197,9 +197,11 @@ foreach ($events as $e) {
         </div>
     </div>
 
-    <script>
+<script>
+        // เริ่มต้นใช้งาน Lucide Icons
         lucide.createIcons();
 
+        // ฟังก์ชันนาฬิกา
         function updateClock() {
             const now = new Date();
             document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
@@ -207,23 +209,53 @@ foreach ($events as $e) {
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Auto Switch Views (ทุก 30 วินาที)
+        // --- ส่วนจัดการการสลับหน้า (Views) ---
+        
         let currentView = 'day';
-        function toggleView() {
+        let autoSwitchInterval;
+
+        function switchView(view) {
             const dayView = document.getElementById('view-day');
             const monthView = document.getElementById('view-month');
+            const btnDay = document.getElementById('btn-day');
+            const btnMonth = document.getElementById('btn-month');
             
-            if (currentView === 'day') {
-                dayView.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
-                monthView.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-                currentView = 'month';
-            } else {
-                monthView.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+            currentView = view;
+
+            if (view === 'day') {
+                // แสดงหน้า Day และซ่อน Month
                 dayView.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
-                currentView = 'day';
+                monthView.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                
+                // อัปเดตสถานะปุ่ม (ถ้ามีปุ่ม ID นี้)
+                if(btnDay) btnDay.classList.add('active');
+                if(btnMonth) btnMonth.classList.remove('active');
+            } else {
+                // แสดงหน้า Month และซ่อน Day
+                monthView.classList.remove('opacity-0', 'translate-y-10', 'pointer-events-none');
+                dayView.classList.add('opacity-0', 'translate-y-10', 'pointer-events-none');
+                
+                // อัปเดตสถานะปุ่ม
+                if(btnMonth) btnMonth.classList.add('active');
+                if(btnDay) btnDay.classList.remove('active');
             }
+
+            // ทุกครั้งที่สลับหน้า (ไม่ว่าจะกดเองหรือออโต้) ให้เริ่มนับเวลา 30 วิใหม่เสมอ
+            resetAutoSwitch();
         }
-        setInterval(toggleView, 30000); // 30 วินาทีสลับครั้ง
+
+        function resetAutoSwitch() {
+            // ล้าง Timer เก่าทิ้งเพื่อป้องกันการซ้อนกัน
+            clearInterval(autoSwitchInterval);
+            // ตั้ง Timer ใหม่
+            autoSwitchInterval = setInterval(() => {
+                const nextView = (currentView === 'day') ? 'month' : 'day';
+                switchView(nextView);
+            }, 30000); // 30 วินาที
+        }
+
+        // รันครั้งแรกเมื่อโหลดหน้าเว็บ
+        resetAutoSwitch();
     </script>
 </body>
 </html>
