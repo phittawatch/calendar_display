@@ -76,6 +76,18 @@ foreach ($events as $e) {
         .active-dot {
             box-shadow: 0 0 10px #a78bfa;
         }
+        /* สไตล์ปุ่ม Navigation */
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        .nav-btn.active {
+            background: rgba(167, 139, 250, 0.2);
+            border-color: #a78bfa;
+            color: #a78bfa;
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -93,6 +105,14 @@ foreach ($events as $e) {
                 <p class="text-white/50 text-sm tracking-widest uppercase ml-1">Smart Office Information Board</p>
             </div>
             <div class="text-right">
+                <div class="flex justify-end gap-2 mb-4">
+                    <button onclick="switchView('day')" id="btn-day" class="nav-btn active px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="calendar-days" class="w-4 h-4"></i> Daily
+                    </button>
+                    <button onclick="switchView('month')" id="btn-month" class="nav-btn px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-4 h-4"></i> Monthly
+                    </button>
+                </div>
                 <div id="liveClock" class="text-5xl font-light tracking-tighter mb-1">00:00:00</div>
                 <div class="text-purple-300 font-medium uppercase tracking-widest text-sm"><?php echo date('l, d F Y'); ?></div>
             </div>
