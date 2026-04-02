@@ -86,7 +86,7 @@ foreach ($events as $e) {
         <header class="flex justify-between items-end mb-10">
             <div>
                 <div class="flex items-center gap-3 mb-2">
-                    <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" class="h-10 brightness-0 invert" alt="PEA">
+                    <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" class="h-10" alt="PEA">
                     <div class="h-8 w-[1px] bg-white/20"></div>
                     <h1 class="text-2xl font-light tracking-widest uppercase">Digital Hub <span class="font-bold text-purple-400">กฟฉ.3</span></h1>
                 </div>
