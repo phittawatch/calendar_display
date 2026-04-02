@@ -87,7 +87,7 @@ foreach ($events as $e) {
             <div>
                 <div class="flex items-center gap-3 mb-2">
                     <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" 
-                     style="height: 40px; width: auto; object-fit: contain;" 
+                     style="height: 2.5rem; width: auto; max-width: 100%; object-fit: contain;" 
                      class="brightness-0 invert" 
                      alt="PEA">
                     <div class="h-8 w-[1px] bg-white/20"></div>
