@@ -114,7 +114,7 @@ foreach ($events as $e) {
                     </button>
                 </div>
                 <div id="liveClock" class="text-5xl font-light tracking-tighter mb-1">00:00:00</div>
-                <div class="text-purple-300 font-big uppercase tracking-widest text-sm"><?php echo date('l, d F Y'); ?></div>
+                <div class="text-purple-300 font-bold uppercase tracking-widest text-l"><?php echo date('l, d F Y'); ?></div>
             </div>
         </header>
 
