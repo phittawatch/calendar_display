@@ -98,7 +98,7 @@ foreach ($events as $e) {
         <header class="flex justify-between items-end mb-10">
             <div>
                 <div class="flex items-center gap-3 mb-1">
-                    <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" class="h-16" alt="PEA">
+                    <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" class="h-24" alt="PEA">
                     <div class="h-8 w-[1px] bg-white/20"></div>
                     <h1 class="text-4xl font-light tracking-widest uppercase">ระบบแสดงข้อมูลการจัดอบรม - ประชุม และกิจกรรมของ <span class="font-bold text-purple-400">กฟฉ.3</span></h1>
                 </div>
