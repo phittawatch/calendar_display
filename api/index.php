@@ -102,7 +102,7 @@ foreach ($events as $e) {
                     <div class="h-8 w-[1px] bg-white/20"></div>
                     <h1 class="text-4xl font-light tracking-widest uppercase">ระบบแสดงข้อมูลการจัดอบรม - ประชุม และกิจกรรมของ <span class="font-bold text-purple-400">กฟฉ.3</span></h1>
                 </div>
-                <p class="text-white/50 text-sm tracking-widest uppercase ml-1">Smart Office Information Board</p>
+                <p class="text-white/50 text-sm font-bold tracking-widest uppercase ml-1">Smart Office Information Board</p>
             </div>
             <div class="text-right">
                 <div class="flex justify-end gap-2 mb-4">
