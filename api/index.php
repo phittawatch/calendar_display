@@ -125,7 +125,7 @@ foreach ($events as $e) {
                     <div class="col-span-12 lg:col-span-4 flex flex-col justify-center">
                         <h2 class="text-6xl font-bold mb-4">TODAY</h2>
                         <div class="h-1 w-20 bg-purple-500 mb-6"></div>
-                        <p class="text-xl text-white/60 leading-relaxed italic">"ข้อมูลวาระงานประจำวันล่าสุด เพื่อการประสานงานที่มีประสิทธิภาพ"</p>
+                        <!-- <p class="text-xl text-white/60 leading-relaxed italic">"ข้อมูลวาระงานประจำวันล่าสุด เพื่อการประสานงานที่มีประสิทธิภาพ"</p> -->
                     </div>
                     
                     <div class="col-span-12 lg:col-span-8 overflow-y-auto pr-4 custom-scroll">
