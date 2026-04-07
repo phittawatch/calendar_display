@@ -82,7 +82,7 @@ foreach ($events as $e) {
                     <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" class="h-12 lg:h-20" alt="PEA">
                     <div class="h-8 w-[1px] bg-white/20"></div>
                     <h1 class="text-xl lg:text-3xl font-light tracking-wide uppercase leading-tight">
-                        ระบบแสดงข้อมูลกิจกรรม <span class="font-bold text-purple-400">กฟฉ.3</span>
+                        ระบบแสดงข้อมูลการจัดอบรม - ประชุม และกิจกรรมของ <span class="font-bold text-purple-400">กฟฉ.3</span>
                     </h1>
                 </div>
                 <p class="text-white/50 text-[10px] lg:text-xs font-bold tracking-widest uppercase ml-1">Smart Office Information Board</p>
@@ -107,7 +107,7 @@ foreach ($events as $e) {
                     <div class="hidden lg:col-span-4 lg:flex flex-col justify-center">
                         <h2 class="text-7xl font-bold mb-4">TODAY</h2>
                         <div class="h-1.5 w-24 bg-purple-500 mb-6 rounded-full"></div>
-                        <p class="text-xl text-white/40 italic">ประสานงานฉับไว ข้อมูลถูกต้อง</p>
+                        <!-- <p class="text-xl text-white/40 italic">ประสานงานฉับไว ข้อมูลถูกต้อง</p> -->
                     </div>
                     
                     <div class="col-span-1 lg:col-span-8 overflow-y-auto pr-2">
