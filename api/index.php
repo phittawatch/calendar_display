@@ -10,6 +10,11 @@ $monthNameThai = ["01"=>"มกราคม", "02"=>"กุมภาพันธ
 $displayMonth = $monthNameThai[date('m')] . " " . (date('Y') + 543);
 $daysInMonth = date('t');
 $startDayOfWeek = date('w', strtotime(date('Y-m-01')));
+// เพิ่ม Array ชื่อวันภาษาไทย
+$dayNameThai = ["Sunday"=>"วันอาทิตย์", "Monday"=>"วันจันทร์", "Tuesday"=>"วันอังคาร", "Wednesday"=>"วันพุธ", "Thursday"=>"วันพฤหัสบดี", "Friday"=>"วันศุกร์", "Saturday"=>"วันเสาร์"];
+
+// สร้างตัวแปรวันที่แบบไทย
+$thaiDate = $dayNameThai[date('l')] . "ที่ " . date('j') . " " . $monthNameThai[date('m')] . " " . (date('Y') + 543);
 
 $eventMap = [];
 foreach ($events as $e) {
@@ -97,7 +102,9 @@ foreach ($events as $e) {
                     </button>
                 </div>
                 <div id="liveClock" class="text-3xl lg:text-5xl font-light tracking-tighter mb-1">00:00:00</div>
-                <div class="text-purple-300 font-bold uppercase tracking-widest text-[10px] lg:text-sm"><?php echo date('l, d F Y'); ?></div>
+<div class="text-purple-300 font-bold uppercase tracking-widest text-[10px] lg:text-sm">
+    <?php echo $thaiDate; ?>
+</div>
             </div>
         </header>
 
@@ -128,7 +135,7 @@ foreach ($events as $e) {
                             <?php else: ?>
                                 <div class="glass-panel p-16 rounded-[3rem] text-center">
                                     <i data-lucide="calendar-check-2" class="w-12 h-12 mx-auto mb-4 opacity-20 text-purple-400"></i>
-                                    <p class="text-xl text-white/30 tracking-widest uppercase">No Events Today</p>
+                                    <p class="text-xl text-white/30 tracking-widest uppercase">ไม่พบข้อมูลกิจกรรมวันนี้</p>
                                 </div>
                             <?php endif; ?>
                         </div>
