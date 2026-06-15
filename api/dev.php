@@ -26,7 +26,6 @@ $today = date('Y-m-d');
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        /* ปรับสีพื้นหลังหลักให้สว่างขึ้น (Light Theme) */
         body { 
             font-family: 'Kanit', sans-serif; 
             background: #f8fafc; 
@@ -37,7 +36,6 @@ $today = date('Y-m-d');
         
         .view-transition { transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        /* ปรับ Background Gradient ให้สว่าง ไบรท์ ดูสะอาดตาขึ้น */
         .bg-gradient {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(45deg, #f1f5f9, #e0f2fe, #f3e8ff, #fae8ff);
@@ -46,7 +44,6 @@ $today = date('Y-m-d');
         }
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* ปรับแผงกระจก (Glass Panel) ให้เข้ากับธีมสว่าง */
         .glass-panel {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(20px);
@@ -64,7 +61,6 @@ $today = date('Y-m-d');
             .flex-grow { position: relative !important; min-height: 550px; }
         }
 
-        /* Modal Style สำหรับธีมสว่าง */
         .modal {
             display: none; position: fixed; inset: 0; z-index: 100;
             background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px);
@@ -125,8 +121,7 @@ $today = date('Y-m-d');
                     </div>
                     
                     <div class="col-span-1 lg:col-span-8 overflow-y-auto pr-2">
-                        <div id="daily-list-container" class="space-y-4">
-                            </div>
+                        <div id="daily-list-container" class="space-y-4"></div>
                     </div>
                 </div>
             </section>
@@ -171,24 +166,19 @@ $today = date('Y-m-d');
                 </div>
                 <button onclick="closeModal()" class="p-2 hover:bg-slate-100 rounded-full text-slate-500"><i data-lucide="x"></i></button>
             </div>
-            <div id="m-content" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                </div>
+            <div id="m-content" class="space-y-4 max-h-[60vh] overflow-y-auto pr-2"></div>
         </div>
     </div>
 
     <script>
-        // โหลดข้อมูลกิจกรรมทั้งหมดจาก PHP เข้ามาใน JS
         const allEvents = <?php echo $events_json; ?>;
         const todayStr = "<?php echo $today; ?>";
         
         const monthNameThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
-        
-        // ตัวแปรสำหรับคุมปฏิทินรายเดือน (ย้อนหลัง-ล่วงหน้า)
         let currentCalendarDate = new Date(); 
 
         lucide.createIcons();
 
-        // นาฬิกา Realtime
         function updateClock() {
             const now = new Date();
             document.getElementById('liveClock').textContent = now.toLocaleTimeString('en-GB', { hour12: false });
@@ -196,7 +186,6 @@ $today = date('Y-m-d');
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ฟังก์ชันแยก Map วันที่เพื่อความรวดเร็วในการสืบค้น
         function getEventMap() {
             const map = {};
             allEvents.forEach(e => {
@@ -207,7 +196,7 @@ $today = date('Y-m-d');
             return map;
         }
 
-        // 1. เรนเดอร์รายการกิจกรรมของ "วันนี้" (หน้า Daily) แบบตัวหนังสือใหญ่
+        // 1. เรนเดอร์รายการกิจกรรมของวันนี้ (Daily View)
         function renderDailyList() {
             const eventMap = getEventMap();
             const todayEvents = eventMap[todayStr] || [];
@@ -215,13 +204,14 @@ $today = date('Y-m-d');
             
             if (todayEvents.length > 0) {
                 container.innerHTML = todayEvents.map(ev => {
-                    const eventColor = ev.color || '#9333ea';
+                    const eventColor = ev.color || '#9333ea'; // ใช้สีดั้งเดิมที่แมปมาจากหลังบ้านเลย
                     return `
                         <div onclick='showEventDetails("วันนี้", ${JSON.stringify([ev])})' 
                              class="glass-panel p-6 lg:p-8 rounded-[2rem] flex items-center gap-6 lg:gap-8 border-l-8 cursor-pointer hover:bg-white transition-all bg-white/90" 
                              style="border-left-color: ${eventColor};">
                             <div class="text-2xl lg:text-4xl font-bold text-purple-600 w-20 lg:w-32 shrink-0">${ev.start || '--:--'}</div>
                             <div class="flex-grow">
+                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium mb-1 inline-block">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
                                 <h3 class="text-xl lg:text-3xl font-bold text-slate-800 mb-2">${escapeHtml(ev.title)}</h3>
                                 <div class="flex items-center gap-2 text-slate-500 text-sm lg:text-base">
                                     <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
@@ -242,13 +232,12 @@ $today = date('Y-m-d');
             lucide.createIcons();
         }
 
-        // 2. ฟังก์ชันเรนเดอร์ปฏิทินรายเดือน (รองรับการกดดูย้อนหลังหลักเดือนได้หมด)
+        // 2. เรนเดอร์ปฏิทินรายเดือน
         function renderCalendar() {
             const eventMap = getEventMap();
             const year = currentCalendarDate.getFullYear();
-            const month = currentCalendarDate.getMonth(); // 0-11
+            const month = currentCalendarDate.getMonth(); 
             
-            // ตั้งค่าหัวปฏิทิน (พ.ศ.)
             document.getElementById('calendar-month-title').textContent = monthNameThai[month] + " " + (year + 543);
             
             const firstDayIndex = new Date(year, month, 1).getDay();
@@ -256,12 +245,10 @@ $today = date('Y-m-d');
             
             let cellsHtml = '';
             
-            // เติมช่องว่างของวันในสัปดาห์แรกก่อนเริ่มวันที่ 1
             for (let i = 0; i < firstDayIndex; i++) {
                 cellsHtml += `<div class="border-r border-b border-slate-100 bg-slate-50/50 opacity-40"></div>`;
             }
             
-            // เติมวันที่ 1 ถึงสิ้นเดือน
             for (let d = 1; d <= totalDays; d++) {
                 const currentMonthStr = String(month + 1).padStart(2, '0');
                 const currentDayStr = String(d).padStart(2, '0');
@@ -269,7 +256,6 @@ $today = date('Y-m-d');
                 
                 const isToday = (dateKey === todayStr);
                 const dayEvents = eventMap[dateKey] || [];
-                
                 const thaiDisplayMonth = monthNameThai[month] + " " + (year + 543);
                 
                 cellsHtml += `
@@ -278,7 +264,7 @@ $today = date('Y-m-d');
                         <span class="text-xs lg:text-base font-bold ${isToday ? 'text-purple-700 bg-purple-200/60 px-2 py-0.5 rounded-full' : 'text-slate-400'}">${d}</span>
                         <div class="mt-2 space-y-1">
                             ${dayEvents.slice(0, 3).map(ev => {
-                                // ดึงสีของเจ้าของเรื่องมาแสดงตรงแถบสีในช่องปฏิทินรายเดือน
+                                // ดึงรหัสสี HEX โดยตรงมาจาก Apps Script ปรับความโปร่งแสงลงเล็กน้อยในพรีวิว
                                 const bgStyle = ev.color ? `background-color: ${ev.color}15; border-color: ${ev.color}; color: ${ev.color};` : '';
                                 return `
                                     <div class="text-[9px] lg:text-xs truncate px-1.5 py-0.5 rounded border font-medium" style="${bgStyle}">
@@ -295,13 +281,11 @@ $today = date('Y-m-d');
             document.getElementById('calendar-cells').innerHTML = cellsHtml;
         }
 
-        // ฟังก์ชันเปลี่ยนเดือน ย้อนหลัง - ล่วงหน้า
         function changeMonth(direction) {
             currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
             renderCalendar();
         }
 
-        // สลับมุมมองหน้าจอ
         let currentView = 'day';
         let autoSwitchInterval;
 
@@ -329,7 +313,7 @@ $today = date('Y-m-d');
             }, 30000); 
         }
 
-        // แสดง Modal รายละเอียดกิจกรรม + ระบบเปิดดูไฟล์แนบ
+        // แสดงผลใน Modal รองรับไฟล์แนบแบบ Array หลายรายการ
         function showEventDetails(dateStr, events) {
             const modal = document.getElementById('eventModal');
             const content = document.getElementById('m-content');
@@ -341,37 +325,45 @@ $today = date('Y-m-d');
                 content.innerHTML = events.map(ev => {
                     const eventColor = ev.color || '#9333ea';
                     
-                    // มองหาฟิลด์ลิงก์ไฟล์แนบ เช่น 'attachment', 'file', หรือ 'link' จากใน JSON Object
-                    const attachmentUrl = ev.attachment || ev.file || ev.link || null;
-                    let attachmentHtml = '';
-                    
-                    if (attachmentUrl) {
-                        attachmentHtml = `
-                            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
-                                <span class="text-xs lg:text-sm text-slate-500 font-medium">📄 มีเอกสารแนบในกิจกรรมนี้</span>
-                                <a href="${attachmentUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-50 text-blue-600 hover:bg-blue-100 text-xs lg:text-sm font-bold rounded-xl transition-all border border-blue-200">
-                                    <i data-lucide="external-link" class="w-4 h-4"></i> กดเพื่อดูไฟล์แนบ
-                                </a>
+                    // ปรับลูปโครงสร้างรองรับไฟล์แนบ (attachments เป็น Array)
+                    let attachmentsHtml = '';
+                    if (ev.attachments && ev.attachments.length > 0) {
+                        attachmentsHtml = `
+                            <div class="mt-4 pt-3 border-t border-slate-100 space-y-2">
+                                <span class="text-xs lg:text-sm text-slate-500 font-medium flex items-center gap-1">
+                                    <i data-lucide="paperclip" class="w-4 h-4"></i> เอกสารแนบประจำกิจกรรม (${ev.attachments.length} ไฟล์):
+                                </span>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    ${ev.attachments.map(att => `
+                                        <a href="${att.url}" target="_blank" class="inline-flex items-center justify-between p-2.5 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-xl transition-all border border-blue-200 group">
+                                            <span class="truncate pr-2 max-w-[180px]">${escapeHtml(att.name)}</span>
+                                            <i data-lucide="external-link" class="w-3.5 h-3.5 shrink-0 group-hover:translate-x-0.5 transition-transform"></i>
+                                        </a>
+                                    `).join('')}
+                                </div>
                             </div>
                         `;
                     }
 
                     return `
-                        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 border-l-8 shadow-sm" style="border-left-color: ${eventColor}">
-                            <div class="text-purple-600 font-bold text-xl lg:text-2xl mb-1.5">${ev.start || '--:--'} น.</div>
+                        <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 border-l-8 shadow-sm mb-4" style="border-left-color: ${eventColor}">
+                            <div class="flex justify-between items-start gap-2 mb-1.5">
+                                <div class="text-purple-600 font-bold text-xl lg:text-2xl">${ev.start || '--:--'} น.</div>
+                                <span class="text-xs bg-white border px-2.5 py-1 rounded-full text-slate-500 font-medium shadow-sm">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
+                            </div>
                             <div class="text-xl lg:text-2xl font-bold text-slate-800 mb-3">${escapeHtml(ev.title)}</div>
                             <div class="flex items-start gap-2 text-slate-600 text-sm lg:text-base font-light mb-2">
                                 <i data-lucide="map-pin" class="w-5 h-5 shrink-0 mt-0.5 text-slate-400"></i>
                                 <span><strong>สถานที่:</strong> ${escapeHtml(ev.location || 'ไม่ระบุสถานที่')}</span>
                             </div>
-                            ${attachmentHtml}
+                            ${attachmentsHtml}
                         </div>
                     `;
                 }).join('');
             }
             modal.classList.add('active');
             lucide.createIcons();
-            clearInterval(autoSwitchInterval); // หยุดหน่วงเวลา auto switch ขณะเปิดอ่านข้อมูล
+            clearInterval(autoSwitchInterval); 
         }
 
         function closeModal() {
@@ -389,7 +381,6 @@ $today = date('Y-m-d');
                 .replace(/'/g, "&#039;");
         }
 
-        // เริ่มต้นรันระบบข้อมูลครั้งแรกเมื่อหน้าจอโหลดเสร็จ
         renderDailyList();
         renderCalendar();
         resetAutoSwitch();
