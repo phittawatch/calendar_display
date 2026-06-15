@@ -4,8 +4,6 @@ date_default_timezone_set('Asia/Bangkok');
 
 $response = @file_get_contents($script_url);
 $events = json_decode($response, true) ?: [];
-
-// แปลงกิจกรรมให้อยู่ในรูปแบบที่ JavaScript นำไปใช้ได้ง่าย
 $events_json = json_encode($events);
 
 $monthNameThai = ["01"=>"มกราคม", "02"=>"กุมภาพันธ์", "03"=>"มีนาคม", "04"=>"เมษายน", "05"=>"พฤษภาคม", "06"=>"มิถุนายน", "07"=>"กรกฎาคม", "08"=>"สิงหาคม", "09"=>"กันยายน", "10"=>"ตุลาคม", "11"=>"พฤศจิกายน", "12"=>"ธันวาคม"];
@@ -33,9 +31,7 @@ $today = date('Y-m-d');
             margin: 0; 
             padding: 0; 
         }
-        
         .view-transition { transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
-        
         .bg-gradient {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(45deg, #f1f5f9, #e0f2fe, #f3e8ff, #fae8ff);
@@ -43,31 +39,24 @@ $today = date('Y-m-d');
             animation: gradientMove 15s ease infinite;
         }
         @keyframes gradientMove { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-
         .glass-panel {
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(15, 23, 42, 0.08);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         }
-
         @media (max-width: 768px) {
             body { overflow-y: auto; }
-            .hide-on-mobile { display: none; }
             .calendar-grid { grid-template-columns: repeat(7, 1fr); font-size: 0.75rem; }
-            .calendar-cell { min-height: 60px !important; padding: 6px !important; }
             header { flex-direction: column; align-items: flex-start !important; gap: 1.5rem; }
             .text-right { text-align: left !important; width: 100%; }
-            .flex-grow { position: relative !important; min-height: 550px; }
         }
-
         .modal {
             display: none; position: fixed; inset: 0; z-index: 100;
             background: rgba(15, 23, 42, 0.4); backdrop-filter: blur(10px);
             align-items: center; justify-content: center; padding: 1.5rem;
         }
         .modal.active { display: flex; }
-
         .nav-btn { 
             background: rgba(15, 23, 42, 0.05); 
             border: 1px solid rgba(15, 23, 42, 0.08); 
@@ -79,13 +68,21 @@ $today = date('Y-m-d');
             border-color: #9333ea; 
             color: white; 
         }
+        
+        /* สไตล์เสริมสำหรับปุ่มตัวกรอง (Filter) */
+        .filter-chip {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .filter-chip:hover {
+            transform: translateY(-1px);
+        }
     </style>
 </head>
 <body>
     <div class="bg-gradient"></div>
 
     <div class="min-h-screen flex flex-col p-4 lg:p-10">
-        <header class="flex justify-between items-end mb-8">
+        <header class="flex justify-between items-end mb-6">
             <div>
                 <div class="flex items-center gap-4 mb-2">
                     <img src="https://www.pea.co.th/sites/default/files/images/home/pea_logo_big.png" class="h-14 lg:h-24" alt="PEA">
@@ -111,6 +108,14 @@ $today = date('Y-m-d');
                 </div>
             </div>
         </header>
+
+        <div class="glass-panel rounded-2xl p-4 mb-6 flex flex-wrap items-center gap-3">
+            <span class="text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 select-none">
+                <i data-lucide="filter" class="w-4 h-4 text-purple-600"></i> คัดกรองปฏิทิน:
+            </span>
+            <div id="filter-container" class="flex flex-wrap gap-2">
+                </div>
+        </div>
 
         <div class="flex-grow relative">
             <section id="view-day" class="view-transition absolute inset-0">
@@ -177,6 +182,9 @@ $today = date('Y-m-d');
         const monthNameThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         let currentCalendarDate = new Date(); 
 
+        // ตัวแปรเก็บสถานะการเลือก Filter ปฏิทิน (เก็บเป็น Object { "ชื่อปฏิทิน": true/false })
+        let calendarFilters = {};
+
         lucide.createIcons();
 
         function updateClock() {
@@ -186,9 +194,87 @@ $today = date('Y-m-d');
         setInterval(updateClock, 1000);
         updateClock();
 
+        // ฟังก์ชันสร้างปุ่มกรองปฏิทินจากข้อมูลจริง
+        function initFilters() {
+            const names = new Set();
+            // ดึงรายชื่อปฏิทินทั้งหมดที่มีใน Event
+            allEvents.forEach(e => {
+                if (e.calendarName) names.add(e.calendarName);
+            });
+
+            // จับคู่สีเริ่มต้นให้ปุ่ม โดยหาจากสีกิจกรรมแรกที่เจอของปฏิทินนั้นๆ
+            const calColorMap = {};
+            allEvents.forEach(e => {
+                if (e.calendarName && !calColorMap[e.calendarName]) {
+                    calColorMap[e.calendarName] = e.color || '#9333ea';
+                }
+            });
+
+            const filterContainer = document.getElementById('filter-container');
+            if (names.size === 0) {
+                filterContainer.innerHTML = '<span class="text-xs text-slate-400 italic">ไม่พบข้อมูลชื่อปฏิทิน</span>';
+                return;
+            }
+
+            // ตั้งค่าเริ่มต้นให้เปิดใช้งาน (Active) ทุกปฏิทิน
+            names.forEach(name => {
+                calendarFilters[name] = true;
+            });
+
+            // เรนเดอร์ปุ่มตัวกรอง
+            renderFilterButtons(calColorMap);
+        }
+
+        function renderFilterButtons(calColorMap) {
+            const filterContainer = document.getElementById('filter-container');
+            filterContainer.innerHTML = Object.keys(calendarFilters).map(name => {
+                const isActive = calendarFilters[name];
+                const themeColor = calColorMap[name] || '#9333ea';
+                
+                // กำหนดสไตล์เมื่อปุ่ม Active หรือ Inactive
+                const btnStyle = isActive 
+                    ? `background-color: ${themeColor}18; border-color: ${themeColor}; color: ${themeColor}; font-weight: 600;`
+                    : `background-color: rgba(241, 245, 249, 0.5); border-color: rgba(226, 232, 240, 0.8); color: #94a3b8;`;
+
+                return `
+                    <button onclick="toggleFilter('${escapeJs(name)}')" 
+                            class="filter-chip px-3.5 py-1.5 rounded-full border text-xs lg:text-sm flex items-center gap-2 shadow-sm"
+                            style="${btnStyle}">
+                        <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${isActive ? themeColor : '#cbd5e1'};"></span>
+                        ${escapeHtml(name)}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function toggleFilter(name) {
+            // สลับสถานะเปิด-ปิด
+            calendarFilters[name] = !calendarFilters[name];
+            
+            // หาแผนผังสีอีกครั้งเพื่อวาดปุ่มใหม่
+            const calColorMap = {};
+            allEvents.forEach(e => {
+                if (e.calendarName && !calColorMap[e.calendarName]) {
+                    calColorMap[e.calendarName] = e.color || '#9333ea';
+                }
+            });
+            
+            renderFilterButtons(calColorMap);
+            
+            // อัปเดตการแสดงผลโครงสร้างข้อมูลใหม่ทั้งหมด
+            renderDailyList();
+            renderCalendar();
+        }
+
+        // ดึงเฉพาะ Event ที่ผ่านการกรอง (เปิดใช้งานอยู่)
+        function getFilteredEvents() {
+            return allEvents.filter(e => calendarFilters[e.calendarName] !== false);
+        }
+
         function getEventMap() {
             const map = {};
-            allEvents.forEach(e => {
+            const filtered = getFilteredEvents();
+            filtered.forEach(e => {
                 const dateKey = e.startDate || todayStr;
                 if (!map[dateKey]) map[dateKey] = [];
                 map[dateKey].push(e);
@@ -196,7 +282,6 @@ $today = date('Y-m-d');
             return map;
         }
 
-        // 1. เรนเดอร์รายการกิจกรรมของวันนี้ (Daily View)
         function renderDailyList() {
             const eventMap = getEventMap();
             const todayEvents = eventMap[todayStr] || [];
@@ -204,14 +289,14 @@ $today = date('Y-m-d');
             
             if (todayEvents.length > 0) {
                 container.innerHTML = todayEvents.map(ev => {
-                    const eventColor = ev.color || '#9333ea'; // ใช้สีดั้งเดิมที่แมปมาจากหลังบ้านเลย
+                    const eventColor = ev.color || '#9333ea'; 
                     return `
                         <div onclick='showEventDetails("วันนี้", ${JSON.stringify([ev])})' 
                              class="glass-panel p-6 lg:p-8 rounded-[2rem] flex items-center gap-6 lg:gap-8 border-l-8 cursor-pointer hover:bg-white transition-all bg-white/90" 
                              style="border-left-color: ${eventColor};">
-                            <div class="text-2xl lg:text-4xl font-bold text-purple-600 w-20 lg:w-32 shrink-0">${ev.start || '--:--'}</div>
+                            <div class="text-2xl lg:text-4xl font-bold w-20 lg:w-32 shrink-0" style="color: ${eventColor};">${ev.start || '--:--'}</div>
                             <div class="flex-grow">
-                                <span class="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-medium mb-1 inline-block">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
+                                <span class="text-xs px-2 py-0.5 rounded font-medium mb-1 inline-block" style="background-color: ${eventColor}20; color: ${eventColor};">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
                                 <h3 class="text-xl lg:text-3xl font-bold text-slate-800 mb-2">${escapeHtml(ev.title)}</h3>
                                 <div class="flex items-center gap-2 text-slate-500 text-sm lg:text-base">
                                     <i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i>
@@ -232,7 +317,6 @@ $today = date('Y-m-d');
             lucide.createIcons();
         }
 
-        // 2. เรนเดอร์ปฏิทินรายเดือน
         function renderCalendar() {
             const eventMap = getEventMap();
             const year = currentCalendarDate.getFullYear();
@@ -264,10 +348,9 @@ $today = date('Y-m-d');
                         <span class="text-xs lg:text-base font-bold ${isToday ? 'text-purple-700 bg-purple-200/60 px-2 py-0.5 rounded-full' : 'text-slate-400'}">${d}</span>
                         <div class="mt-2 space-y-1">
                             ${dayEvents.slice(0, 3).map(ev => {
-                                // ดึงรหัสสี HEX โดยตรงมาจาก Apps Script ปรับความโปร่งแสงลงเล็กน้อยในพรีวิว
                                 const bgStyle = ev.color ? `background-color: ${ev.color}15; border-color: ${ev.color}; color: ${ev.color};` : '';
                                 return `
-                                    <div class="text-[9px] lg:text-xs truncate px-1.5 py-0.5 rounded border font-medium" style="${bgStyle}">
+                                    <div class="text-[9px] lg:text-xs truncate px-1.5 py-0.5 rounded border font-semibold" style="${bgStyle}">
                                         ${escapeHtml(ev.title)}
                                     </div>
                                 `;
@@ -313,7 +396,6 @@ $today = date('Y-m-d');
             }, 30000); 
         }
 
-        // แสดงผลใน Modal รองรับไฟล์แนบแบบ Array หลายรายการ
         function showEventDetails(dateStr, events) {
             const modal = document.getElementById('eventModal');
             const content = document.getElementById('m-content');
@@ -325,7 +407,6 @@ $today = date('Y-m-d');
                 content.innerHTML = events.map(ev => {
                     const eventColor = ev.color || '#9333ea';
                     
-                    // ปรับลูปโครงสร้างรองรับไฟล์แนบ (attachments เป็น Array)
                     let attachmentsHtml = '';
                     if (ev.attachments && ev.attachments.length > 0) {
                         attachmentsHtml = `
@@ -348,8 +429,8 @@ $today = date('Y-m-d');
                     return `
                         <div class="p-6 rounded-2xl bg-slate-50 border border-slate-200 border-l-8 shadow-sm mb-4" style="border-left-color: ${eventColor}">
                             <div class="flex justify-between items-start gap-2 mb-1.5">
-                                <div class="text-purple-600 font-bold text-xl lg:text-2xl">${ev.start || '--:--'} น.</div>
-                                <span class="text-xs bg-white border px-2.5 py-1 rounded-full text-slate-500 font-medium shadow-sm">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
+                                <div class="font-bold text-xl lg:text-2xl" style="color: ${eventColor};">${ev.start || '--:--'} น.</div>
+                                <span class="text-xs border px-2.5 py-1 rounded-full font-medium shadow-sm" style="background-color: ${eventColor}10; color: ${eventColor}; border-color: ${eventColor}30;">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
                             </div>
                             <div class="text-xl lg:text-2xl font-bold text-slate-800 mb-3">${escapeHtml(ev.title)}</div>
                             <div class="flex items-start gap-2 text-slate-600 text-sm lg:text-base font-light mb-2">
@@ -381,6 +462,13 @@ $today = date('Y-m-d');
                 .replace(/'/g, "&#039;");
         }
 
+        function escapeJs(text) {
+            if (!text) return '';
+            return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+        }
+
+        // ลำดับขั้นตอนการสั่งรันหน้าเว็บครั้งแรก
+        initFilters();
         renderDailyList();
         renderCalendar();
         resetAutoSwitch();
