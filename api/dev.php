@@ -68,8 +68,6 @@ $today = date('Y-m-d');
             border-color: #9333ea; 
             color: white; 
         }
-        
-        /* สไตล์เสริมสำหรับปุ่มตัวกรอง (Filter) */
         .filter-chip {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -113,8 +111,7 @@ $today = date('Y-m-d');
             <span class="text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5 ml-1 select-none">
                 <i data-lucide="filter" class="w-4 h-4 text-purple-600"></i> คัดกรองปฏิทิน:
             </span>
-            <div id="filter-container" class="flex flex-wrap gap-2">
-                </div>
+            <div id="filter-container" class="flex flex-wrap gap-2"></div>
         </div>
 
         <div class="flex-grow relative">
@@ -176,13 +173,31 @@ $today = date('Y-m-d');
     </div>
 
     <script>
+        // 1. ตั้งค่าจับคู่สีตามชื่อปฏิทินที่ต้องการบังคับเปลี่ยน (ระบุชื่อที่ตรงกับใน Google Calendar)
+        const customCalendarColors = {
+            "ฝบป.": "#2563eb",  // สีน้ำเงินเด่นชัด (Blue)
+            "กสข.": "#db2777",  // สีชมพูเข้มแยกฝั่งชัดเจน (Pink)
+            "คอมพิวเตอร์และเครือข่าย": "#16a34a" // สีเขียว (ตัวอย่างเพิ่มเติม)
+        };
+
+        // ฟังก์ชันช่วยดึงสีที่ถูกต้อง (ถ้าคำในปฏิทินเข้าเงื่อนไขข้อความข้างบน ให้ใช้สีที่ฟิกซ์ไว้)
+        function getEventColor(ev) {
+            if (!ev.calendarName) return ev.color || '#9333ea';
+            
+            // วนลูปเช็คว่าชื่อปฏิทินมีคำสำคัญของแผนกนั้นๆ อยู่หรือไม่
+            for (let key in customCalendarColors) {
+                if (ev.calendarName.includes(key)) {
+                    return customCalendarColors[key];
+                }
+            }
+            return ev.color || '#9333ea'; // ถ้าไม่เข้าล็อกไหนเลย ให้ใช้สีที่ส่งมาจากสคริปต์
+        }
+
         const allEvents = <?php echo $events_json; ?>;
         const todayStr = "<?php echo $today; ?>";
         
         const monthNameThai = ["มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"];
         let currentCalendarDate = new Date(); 
-
-        // ตัวแปรเก็บสถานะการเลือก Filter ปฏิทิน (เก็บเป็น Object { "ชื่อปฏิทิน": true/false })
         let calendarFilters = {};
 
         lucide.createIcons();
@@ -194,19 +209,17 @@ $today = date('Y-m-d');
         setInterval(updateClock, 1000);
         updateClock();
 
-        // ฟังก์ชันสร้างปุ่มกรองปฏิทินจากข้อมูลจริง
         function initFilters() {
             const names = new Set();
-            // ดึงรายชื่อปฏิทินทั้งหมดที่มีใน Event
             allEvents.forEach(e => {
                 if (e.calendarName) names.add(e.calendarName);
             });
 
-            // จับคู่สีเริ่มต้นให้ปุ่ม โดยหาจากสีกิจกรรมแรกที่เจอของปฏิทินนั้นๆ
             const calColorMap = {};
             allEvents.forEach(e => {
                 if (e.calendarName && !calColorMap[e.calendarName]) {
-                    calColorMap[e.calendarName] = e.color || '#9333ea';
+                    // ใช้ฟังก์ชัน getEventColor ดึงสีที่แมปปิ้งใหม่มาโชว์ที่ปุ่มตัวกรอง
+                    calColorMap[e.calendarName] = getEventColor(e);
                 }
             });
 
@@ -216,12 +229,10 @@ $today = date('Y-m-d');
                 return;
             }
 
-            // ตั้งค่าเริ่มต้นให้เปิดใช้งาน (Active) ทุกปฏิทิน
             names.forEach(name => {
                 calendarFilters[name] = true;
             });
 
-            // เรนเดอร์ปุ่มตัวกรอง
             renderFilterButtons(calColorMap);
         }
 
@@ -231,7 +242,6 @@ $today = date('Y-m-d');
                 const isActive = calendarFilters[name];
                 const themeColor = calColorMap[name] || '#9333ea';
                 
-                // กำหนดสไตล์เมื่อปุ่ม Active หรือ Inactive
                 const btnStyle = isActive 
                     ? `background-color: ${themeColor}18; border-color: ${themeColor}; color: ${themeColor}; font-weight: 600;`
                     : `background-color: rgba(241, 245, 249, 0.5); border-color: rgba(226, 232, 240, 0.8); color: #94a3b8;`;
@@ -248,25 +258,20 @@ $today = date('Y-m-d');
         }
 
         function toggleFilter(name) {
-            // สลับสถานะเปิด-ปิด
             calendarFilters[name] = !calendarFilters[name];
             
-            // หาแผนผังสีอีกครั้งเพื่อวาดปุ่มใหม่
             const calColorMap = {};
             allEvents.forEach(e => {
                 if (e.calendarName && !calColorMap[e.calendarName]) {
-                    calColorMap[e.calendarName] = e.color || '#9333ea';
+                    calColorMap[e.calendarName] = getEventColor(e);
                 }
             });
             
             renderFilterButtons(calColorMap);
-            
-            // อัปเดตการแสดงผลโครงสร้างข้อมูลใหม่ทั้งหมด
             renderDailyList();
             renderCalendar();
         }
 
-        // ดึงเฉพาะ Event ที่ผ่านการกรอง (เปิดใช้งานอยู่)
         function getFilteredEvents() {
             return allEvents.filter(e => calendarFilters[e.calendarName] !== false);
         }
@@ -289,7 +294,7 @@ $today = date('Y-m-d');
             
             if (todayEvents.length > 0) {
                 container.innerHTML = todayEvents.map(ev => {
-                    const eventColor = ev.color || '#9333ea'; 
+                    const eventColor = getEventColor(ev); // เปลี่ยนมาใช้สีกำหนดเอง
                     return `
                         <div onclick='showEventDetails("วันนี้", ${JSON.stringify([ev])})' 
                              class="glass-panel p-6 lg:p-8 rounded-[2rem] flex items-center gap-6 lg:gap-8 border-l-8 cursor-pointer hover:bg-white transition-all bg-white/90" 
@@ -348,7 +353,8 @@ $today = date('Y-m-d');
                         <span class="text-xs lg:text-base font-bold ${isToday ? 'text-purple-700 bg-purple-200/60 px-2 py-0.5 rounded-full' : 'text-slate-400'}">${d}</span>
                         <div class="mt-2 space-y-1">
                             ${dayEvents.slice(0, 3).map(ev => {
-                                const bgStyle = ev.color ? `background-color: ${ev.color}15; border-color: ${ev.color}; color: ${ev.color};` : '';
+                                const eventColor = getEventColor(ev); // ใช้สีกำหนดเอง
+                                const bgStyle = `background-color: ${eventColor}15; border-color: ${eventColor}; color: ${eventColor};`;
                                 return `
                                     <div class="text-[9px] lg:text-xs truncate px-1.5 py-0.5 rounded border font-semibold" style="${bgStyle}">
                                         ${escapeHtml(ev.title)}
@@ -405,7 +411,7 @@ $today = date('Y-m-d');
                 content.innerHTML = '<div class="py-12 text-center text-slate-400 text-lg italic font-light">ไม่มีกิจกรรมในวันนี้</div>';
             } else {
                 content.innerHTML = events.map(ev => {
-                    const eventColor = ev.color || '#9333ea';
+                    const eventColor = getEventColor(ev); // ใช้สีกำหนดเอง
                     
                     let attachmentsHtml = '';
                     if (ev.attachments && ev.attachments.length > 0) {
@@ -467,7 +473,6 @@ $today = date('Y-m-d');
             return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
         }
 
-        // ลำดับขั้นตอนการสั่งรันหน้าเว็บครั้งแรก
         initFilters();
         renderDailyList();
         renderCalendar();
