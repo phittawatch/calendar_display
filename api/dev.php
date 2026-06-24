@@ -286,15 +286,37 @@ $today = date('Y-m-d');
         }
 
         function getEventMap() {
-            const map = {};
-            const filtered = getFilteredEvents();
-            filtered.forEach(e => {
-                const dateKey = e.startDate || todayStr;
+        const map = {};
+        const filtered = getFilteredEvents();
+        
+        filtered.forEach(e => {
+            const startStr = e.startDate || todayStr;
+            // ถ้าไม่มี endDate ให้เหมาว่าเป็นกิจกรรมวันเดียว (ใช้ startStr แทน)
+            const endStr = e.endDate || startStr; 
+            
+            let current = new Date(startStr);
+            const end = new Date(endStr);
+            
+            // วนลูปตั้งแต่เริ่มจนถึงวันสิ้นสุด เพื่อแผ่กิจกรรมลงไปในทุกๆ วันที่จัดอบรม
+            while (current <= end) {
+                const y = current.getFullYear();
+                const m = String(current.getMonth() + 1).padStart(2, '0');
+                const d = String(current.getDate()).padStart(2, '0');
+                const dateKey = `${y}-${m}-${d}`;
+                
                 if (!map[dateKey]) map[dateKey] = [];
-                map[dateKey].push(e);
-            });
-            return map;
-        }
+                
+                // ป้องกันข้อมูลซ้ำ (เผื่อเฉยๆ)
+                if (!map[dateKey].some(existingEvent => existingEvent.title === e.title && existingEvent.start === e.start)) {
+                    map[dateKey].push(e);
+                }
+                
+                // ขยับไปอีก 1 วัน
+                current.setDate(current.getDate() + 1);
+            }
+        });
+        return map;
+    }
 
         function renderDailyList() {
             const eventMap = getEventMap();
