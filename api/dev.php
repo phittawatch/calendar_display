@@ -453,8 +453,11 @@ $today = date('Y-m-d');
                 content.innerHTML = events.map(ev => {
                     const eventColor = getEventColor(ev);
                     
+                    // ==================== [ปรับปรุงส่วนการแสดงผลเอกสารแนบ] ====================
                     let attachmentsHtml = '';
+                    
                     if (ev.attachments && ev.attachments.length > 0) {
+                        // 1. กรณีดึงก้อนไฟล์แนบตรงๆ ได้สำเร็จ
                         attachmentsHtml = `
                             <div class="mt-3 pt-2 border-t border-slate-100 space-y-1.5">
                                 <span class="text-[11px] lg:text-sm text-slate-500 font-medium flex items-center gap-1">
@@ -470,7 +473,22 @@ $today = date('Y-m-d');
                                 </div>
                             </div>
                         `;
+                    } else if (ev.eventUrl) {
+                        // 2. กรณีที่ดึงก้อน attachments ไม่ได้ (ติดสิทธิ์) แต่มีลิงก์กิจกรรม ให้แสดงปุ่มสำหรับคลิกไปดูบน Google Calendar
+                        attachmentsHtml = `
+                            <div class="mt-3 pt-2 border-t border-slate-100 space-y-1.5">
+                                <span class="text-[11px] lg:text-sm text-slate-500 font-medium flex items-center gap-1">
+                                    <i data-lucide="paperclip" class="w-3.5 h-3.5"></i> เอกสารแนบประจำกิจกรรม:
+                                </span>
+                                <a href="${ev.eventUrl}" target="_blank" class="w-100 inline-flex items-center justify-center gap-2 p-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 text-[11px] font-bold rounded-xl transition-all border border-purple-200 group">
+                                    <i data-lucide="calendar" class="w-4 h-4 shrink-0"></i>
+                                    <span>คลิกเปิดดูเอกสารแนบในระบบ Google Calendar</span>
+                                    <i data-lucide="external-link" class="w-3 h-3 shrink-0 group-hover:translate-x-0.5 transition-transform"></i>
+                                </a>
+                            </div>
+                        `;
                     }
+                    // =========================================================================
 
                     return `
                         <div class="p-4 lg:p-6 rounded-xl lg:rounded-2xl bg-slate-50 border border-slate-200 border-l-4 lg:border-l-8 shadow-sm mb-3" style="border-left-color: ${eventColor}">
