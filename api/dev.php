@@ -2,7 +2,20 @@
 $script_url = getenv('SCRIPT_URL');
 date_default_timezone_set('Asia/Bangkok');
 
-$response = @file_get_contents($script_url);
+// สร้างตัวแปรแฝงเวลา (Timestamp) เพื่อไม่ให้ URL ซ้ำกันในแต่ละวินาที ป้องกันเซิร์ฟเวอร์จำ Cache
+$cache_buster = time();
+$clean_url = strpos($script_url, '?') !== false ? $script_url . "&t=" . $cache_buster : $script_url . "?t=" . $cache_buster;
+
+// สร้าง Context เพื่อบังคับไม่ให้ใช้ Cache
+$options = [
+    "http" => [
+        "header" => "Cache-Control: no-cache, must-revalidate\r\n" .
+                    "Pragma: no-cache\r\n"
+    ]
+];
+$context = stream_context_create($options);
+
+$response = @file_get_contents($clean_url, false, $context);
 $events = json_decode($response, true) ?: [];
 $events_json = json_encode($events);
 
