@@ -493,7 +493,9 @@ $today = date('Y-m-d');
                     return `
                         <div class="p-4 lg:p-6 rounded-xl lg:rounded-2xl bg-slate-50 border border-slate-200 border-l-4 lg:border-l-8 shadow-sm mb-3" style="border-left-color: ${eventColor}">
                             <div class="flex justify-between items-start gap-2 mb-1">
-                                <div class="font-bold text-base lg:text-2xl" style="color: ${eventColor};">${ev.start || '--:--'} น.</div>
+                                <div class="font-bold text-base lg:text-2xl" style="color: ${eventColor};">
+                                    ${ev.start === 'ทั้งวัน' ? 'ทั้งวัน' : (ev.start || '--:--') + ' น.'}
+                                </div>
                                 <span class="text-[10px] lg:text-xs border px-2 py-0.5 rounded-full font-medium shadow-sm" style="background-color: ${eventColor}10; color: ${eventColor}; border-color: ${eventColor}30;\">${escapeHtml(ev.calendarName || 'กิจกรรม')}</span>
                             </div>
                             <div class="text-base lg:text-2xl font-bold text-slate-800 mb-2">${escapeHtml(ev.title)}</div>
